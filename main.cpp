@@ -33,31 +33,71 @@ namespace gbi
 
     struct bracketed_expression;
 
+    struct minus_identifier :
+        seq<op<'-'>>
+    {
+    };
+
+    struct signed_identifier :
+        seq<opt<minus_identifier>, identifier>
+    {
+    };
+
     struct operand :
-        sor<bracketed_expression, identifier, number>
+        sor<bracketed_expression, signed_identifier, number>
+    {
+    };
+
+    struct factor_start :
+        seq<operand>
+    {
+    };
+
+    struct mult_term :
+        seq<operand>
+    {
+    };
+
+    struct div_term :
+        seq<operand>
     {
     };
 
     struct factor :
         seq<
-            operand,
+            factor_start,
             star<
-                seq<
-                    op<'*', '/'>,
-                    operand
+                sor<
+                    seq<op<'*'>, mult_term>,
+                    seq<op<'/'>, div_term>
                 >
             >
         >
     {
     };
 
+    struct addition_start :
+        seq<factor>
+    {
+    };
+
+    struct plus_term :
+        seq<factor>
+    {
+    };
+
+    struct minus_term :
+        seq<factor>
+    {
+    };
+
     struct addition :
         seq<
-            factor,
+            addition_start,
             star<
-                seq<
-                    op<'+', '-'>,
-                    factor
+                sor<
+                    seq<op<'+'>, plus_term>,
+                    seq<op<'-'>, minus_term>
                 >
             >
         >
@@ -101,6 +141,16 @@ namespace gbi
     };
 
     template<>
+    struct action<minus_identifier>
+    {
+        template< typename Input >
+        static void apply( const Input& in)
+        {
+            std::cout << "minus_identifier: " << in.string() << std::endl;
+        }
+    };
+
+    template<>
     struct action<number>
     {
         template< typename Input >
@@ -111,32 +161,62 @@ namespace gbi
     };
 
     template<>
-    struct action<factor>
+    struct action<factor_start>
     {
         template< typename Input >
         static void apply( const Input& in)
         {
-            std::cout << "factor: " << in.string() << std::endl;
+            std::cout << "factor_start: " << in.string() << std::endl;
         }
     };
 
     template<>
-    struct action<addition>
+    struct action<mult_term>
     {
         template< typename Input >
         static void apply( const Input& in)
         {
-            std::cout << "addition: " << in.string() << std::endl;
+            std::cout << "mult_term: " << in.string() << std::endl;
         }
     };
 
     template<>
-    struct action<bracketed_expression>
+    struct action<div_term>
     {
         template< typename Input >
         static void apply( const Input& in)
         {
-            std::cout << "bracketed_expression: " << in.string() << std::endl;
+            std::cout << "div_term: " << in.string() << std::endl;
+        }
+    };
+
+    template<>
+    struct action<addition_start>
+    {
+        template< typename Input >
+        static void apply( const Input& in)
+        {
+            std::cout << "addition_start: " << in.string() << std::endl;
+        }
+    };
+
+    template<>
+    struct action<plus_term>
+    {
+        template< typename Input >
+        static void apply( const Input& in)
+        {
+            std::cout << "plus_term: " << in.string() << std::endl;
+        }
+    };
+
+    template<>
+    struct action<minus_term>
+    {
+        template< typename Input >
+        static void apply( const Input& in)
+        {
+            std::cout << "minus_term: " << in.string() << std::endl;
         }
     };
 }
@@ -150,7 +230,7 @@ int main()
         return 1;
     }
 
-    std::string content("a = (1.5 * ((qwer * 12 + 45.12 * 7 * weoiru) * abc)) + 5 * (1 * 2 + 3 * 4) * (5 * 6 + 7 * 8)");
+    std::string content("(1.5 * ((qwer * 12 + 45.12 * 7 * -   weoiru) * abc)) + 5 / (1 * 2 + 3 * 4) * (5 * 6 + 7 * 8)");
     std::vector<float> v;
 
     tao::pegtl::string_input<> in(content, "");
