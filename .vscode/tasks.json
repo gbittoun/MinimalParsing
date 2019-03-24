@@ -6,7 +6,7 @@
         {
             "label": "Build parser",
             "type": "shell",
-            "command": "g++ -g -std=c++11 -I./PEGTL/include/tao main.cpp",
+            "command": "g++ -o Parser -g -std=c++11 -I./PEGTL/include/tao main.cpp",
             "group": {
                 "kind": "build",
                 "isDefault": true
