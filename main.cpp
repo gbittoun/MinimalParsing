@@ -1,6 +1,6 @@
 #include <iostream>
 #include <pegtl.hpp>
-// #include <pegtl/analyze.hpp>
+#include "operations.h"
 
 namespace gbi
 {
