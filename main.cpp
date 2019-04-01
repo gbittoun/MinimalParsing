@@ -1,6 +1,7 @@
 #include <iostream>
 #include <pegtl.hpp>
 #include "operations.h"
+#include <sstream>
 
 namespace gbi
 {
@@ -134,9 +135,9 @@ namespace gbi
     struct action<identifier>
     {
         template< typename Input >
-        static void apply( const Input& in)
+        static void apply( const Input& in, StateComputer& states)
         {
-            std::cout << "identifier: " << in.string() << std::endl;
+            states.pushVariable(in.string(), false);
         }
     };
 
@@ -144,9 +145,9 @@ namespace gbi
     struct action<minus_identifier>
     {
         template< typename Input >
-        static void apply( const Input& in)
+        static void apply( const Input& in, StateComputer& states)
         {
-            std::cout << "minus_identifier: " << in.string() << std::endl;
+            states.setNegative();
         }
     };
 
@@ -154,9 +155,14 @@ namespace gbi
     struct action<number>
     {
         template< typename Input >
-        static void apply( const Input& in)
+        static void apply( const Input& in, StateComputer& states)
         {
-            std::cout << "number: " << in.string() << std::endl;
+            double value;
+            std::stringstream ss;
+            ss << in.string();
+            ss >> value;
+
+            states.pushNumber(value, false);
         }
     };
 
@@ -164,19 +170,9 @@ namespace gbi
     struct action<factor_start>
     {
         template< typename Input >
-        static void apply( const Input& in)
+        static void apply( const Input& in, StateComputer& states)
         {
-            std::cout << "factor_start: " << in.string() << std::endl;
-        }
-    };
-
-    template<>
-    struct action<mult_term>
-    {
-        template< typename Input >
-        static void apply( const Input& in)
-        {
-            std::cout << "mult_term: " << in.string() << std::endl;
+            states.pushSignal(Signal::SignalType::FactorStart);
         }
     };
 
@@ -184,9 +180,9 @@ namespace gbi
     struct action<div_term>
     {
         template< typename Input >
-        static void apply( const Input& in)
+        static void apply( const Input& in, StateComputer& states)
         {
-            std::cout << "div_term: " << in.string() << std::endl;
+            states.setInverse();
         }
     };
 
@@ -194,19 +190,9 @@ namespace gbi
     struct action<addition_start>
     {
         template< typename Input >
-        static void apply( const Input& in)
+        static void apply( const Input& in, StateComputer& states)
         {
-            std::cout << "addition_start: " << in.string() << std::endl;
-        }
-    };
-
-    template<>
-    struct action<plus_term>
-    {
-        template< typename Input >
-        static void apply( const Input& in)
-        {
-            std::cout << "plus_term: " << in.string() << std::endl;
+            states.pushSignal(Signal::SignalType::AdditionStart);
         }
     };
 
@@ -214,9 +200,29 @@ namespace gbi
     struct action<minus_term>
     {
         template< typename Input >
-        static void apply( const Input& in)
+        static void apply( const Input& in, StateComputer& states)
         {
-            std::cout << "minus_term: " << in.string() << std::endl;
+            states.setNegative();
+        }
+    };
+
+    template<>
+    struct action<factor>
+    {
+        template< typename Input >
+        static void apply( const Input& in, StateComputer& states)
+        {
+            states.close<Factor>();
+        }
+    };
+
+    template<>
+    struct action<addition>
+    {
+        template< typename Input >
+        static void apply( const Input& in, StateComputer& states)
+        {
+            states.close<Addition>();
         }
     };
 }
@@ -232,9 +238,10 @@ int main()
 
     std::string content("(1.5 * ((qwer * 12 + 45.12 * 7 * -   weoiru) * abc)) + 5 / (1 * 2 + 3 * 4) * (5 * 6 + 7 * 8)");
     std::vector<float> v;
+    gbi::StateComputer states;
 
     tao::pegtl::string_input<> in(content, "");
-    bool result = tao::pegtl::parse< gbi::grammar, gbi::action >( in );
+    bool result = tao::pegtl::parse< gbi::grammar, gbi::action >( in, states );
 
     return (result ? 0 : 1);
 }
