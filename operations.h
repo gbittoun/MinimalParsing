@@ -146,11 +146,13 @@ namespace gbi
     public:
         void pushSignal(Signal::SignalType type)
         {
+            std::cout << "void pushSignal(Signal::SignalType type): " << type << std::endl;
             m_Tokens.push(std::make_shared<Signal>(type));
         }
 
         void pushVariable(const std::string& variableName, bool negative)
         {
+            std::cout << "void pushVariable(const std::string& variableName, bool negative): " << variableName << std::endl;
             std::shared_ptr<Variable> variable = std::make_shared<Variable>(
                 variableName, negative ? Node::ExtraQualifier::Negative : Node::ExtraQualifier::None);
             m_Tokens.push(variable);
@@ -158,12 +160,14 @@ namespace gbi
 
         void pushNumber(double value, bool negative)
         {
+            std::cout << "void pushNumber(double value, bool negative): " << value << std::endl;
             m_Tokens.push(std::make_shared<Number>(
                 value, negative ? Node::ExtraQualifier::Negative : Node::ExtraQualifier::None));
         }
 
         void setInverse()
         {
+            std::cout << "void setInverse()" << std::endl;
             gbiAssert(m_Tokens.top()->isNode(), "Only nodes can be set as division terms");
 
             std::static_pointer_cast<Node>(m_Tokens.top())->setInverse();
@@ -171,6 +175,7 @@ namespace gbi
 
         void setNegative()
         {
+            std::cout << "void setNegative()" << std::endl;
             gbiAssert(m_Tokens.top()->isNode(), "Only nodes can be set as minus terms");
 
             std::static_pointer_cast<Node>(m_Tokens.top())->setNegative();
@@ -179,6 +184,7 @@ namespace gbi
         template<typename T>
         void close()
         {
+            std::cout << "void close()" << std::endl;
             std::shared_ptr<T> operatorNode = std::make_shared<T>();
             std::shared_ptr<Token> token = m_Tokens.top();
             m_Tokens.pop();
