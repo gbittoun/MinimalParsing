@@ -4,7 +4,7 @@
 #include <stack>
 #include <string>
 
-#ifdef ENABLE_ASSERTS
+#ifdef ENABLE_GBI_ASSERTS
     #define gbiAssert(condition, message) assert((condition) && message)
 #else
     #define gbiAssert(condition, message)
@@ -111,12 +111,12 @@ namespace gbi
 
     struct Addition : OperatorNode
     {
-        static const Signal::SignalType associatedStartSignal = Signal::AdditionStart;
+        static const Signal::SignalType AssociatedStartSignal = Signal::AdditionStart;
     };
 
     struct Factor : OperatorNode
     {
-        static const Signal::SignalType associatedStartSignal = Signal::FactorStart;
+        static const Signal::SignalType AssociatedStartSignal = Signal::FactorStart;
     };
 
     struct Variable : Node

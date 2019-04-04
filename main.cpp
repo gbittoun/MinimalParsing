@@ -1,7 +1,9 @@
 #include <iostream>
 #include <pegtl.hpp>
-#include "operations.h"
 #include <sstream>
+
+#define ENABLE_GBI_ASSERTS
+#include "operations.h"
 
 namespace gbi
 {
